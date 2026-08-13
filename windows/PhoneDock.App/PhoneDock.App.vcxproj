@@ -39,15 +39,19 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>dnsapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dnsapi.lib;mfplat.lib;mfuuid.lib;d3d11.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Discovery.cpp" />
+    <ClCompile Include="VideoDecoder.cpp" />
+    <ClCompile Include="Renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Discovery.h" />
+    <ClInclude Include="VideoDecoder.h" />
+    <ClInclude Include="Renderer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
