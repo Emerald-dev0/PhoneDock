@@ -1,5 +1,6 @@
 package com.phonedock.app.ui.dashboard
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -11,11 +12,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.phonedock.app.ui.theme.BorderGray
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,12 +28,26 @@ fun DashboardScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("PhoneDock", fontWeight = FontWeight.Bold) },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                ),
+                title = { 
+                    Text(
+                        "PhoneDock", 
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = (-0.5).sp // Tight tracking for "Apple" look
+                    ) 
+                },
                 actions = {
                     IconButton(onClick = { /* TODO */ }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                        Icon(
+                            Icons.Default.Settings, 
+                            contentDescription = "Settings",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
             )
@@ -40,12 +57,12 @@ fun DashboardScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp),
+                .padding(horizontal = 24.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             StatusCard(uiState)
             
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp)) // Massive whitespace
             
             MetricsGrid(uiState)
             
@@ -55,21 +72,22 @@ fun DashboardScreen(
                 onClick = { viewModel.toggleService() },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
+                    .height(60.dp),
+                shape = RoundedCornerShape(12.dp),
+                elevation = null, // No shadows
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (uiState.isServiceRunning) 
                         MaterialTheme.colorScheme.errorContainer 
-                    else MaterialTheme.colorScheme.primaryContainer,
+                    else MaterialTheme.colorScheme.onSurface,
                     contentColor = if (uiState.isServiceRunning)
                         MaterialTheme.colorScheme.onErrorContainer
-                    else MaterialTheme.colorScheme.onPrimaryContainer
+                    else MaterialTheme.colorScheme.surface
                 )
             ) {
                 Text(
                     text = if (uiState.isServiceRunning) "Stop Service" else "Start Service",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
+                    fontSize = 17.sp
                 )
             }
         }
@@ -78,34 +96,42 @@ fun DashboardScreen(
 
 @Composable
 fun StatusCard(uiState: DashboardUiState) {
+    val isConnected = uiState.connectedDevice != null
+    
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         colors = CardDefaults.cardColors(
-            containerColor = if (uiState.connectedDevice != null)
+            containerColor = if (isConnected)
                 MaterialTheme.colorScheme.primaryContainer
-            else MaterialTheme.colorScheme.surfaceVariant
-        )
+            else MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp) // Flat
     ) {
         Column(
-            modifier = Modifier.padding(24.dp),
+            modifier = Modifier.padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = if (uiState.connectedDevice != null) "Connected" else "Waiting",
-                style = MaterialTheme.typography.labelLarge,
-                color = if (uiState.connectedDevice != null)
+                text = if (isConnected) "CONNECTED" else "READY FOR SIGNAL",
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp, // Wide tracking for labels
+                color = if (isConnected)
                     MaterialTheme.colorScheme.onPrimaryContainer
                 else MaterialTheme.colorScheme.onSurfaceVariant
             )
             
+            Spacer(modifier = Modifier.height(8.dp))
+            
             Text(
-                text = uiState.connectedDevice ?: "No PC Connected",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = if (uiState.connectedDevice != null)
+                text = uiState.connectedDevice ?: "No PC Detected",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Black,
+                color = if (isConnected)
                     MaterialTheme.colorScheme.onPrimaryContainer
-                else MaterialTheme.colorScheme.onSurfaceVariant
+                else MaterialTheme.colorScheme.onSurface
             )
         }
     }
@@ -115,14 +141,14 @@ fun StatusCard(uiState: DashboardUiState) {
 fun MetricsGrid(uiState: DashboardUiState) {
     Row(modifier = Modifier.fillMaxWidth()) {
         MetricItem(
-            label = "Local IP",
+            label = "LOCAL IP",
             value = uiState.localIp,
             icon = Icons.Default.Info,
             modifier = Modifier.weight(1f)
         )
         Spacer(modifier = Modifier.width(16.dp))
         MetricItem(
-            label = "Port",
+            label = "PORT",
             value = uiState.localPort?.toString() ?: "--",
             icon = Icons.Default.Info,
             modifier = Modifier.weight(1f)
@@ -137,20 +163,30 @@ fun MetricItem(
     icon: ImageVector,
     modifier: Modifier = Modifier
 ) {
-    OutlinedCard(
+    Card(
         modifier = modifier,
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Icon(
-                icon, 
-                contentDescription = null, 
-                modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.primary
+        Column(modifier = Modifier.padding(20.dp)) {
+            Text(
+                label, 
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.5.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(label, style = MaterialTheme.typography.labelSmall)
-            Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                value, 
+                style = MaterialTheme.typography.titleMedium, 
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
         }
     }
 }
