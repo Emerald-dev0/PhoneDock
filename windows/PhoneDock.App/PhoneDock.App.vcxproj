@@ -38,6 +38,16 @@
       <AdditionalIncludeDirectories>$(ProjectDir);$(GeneratedFilesDir);$(ProjectDir)..\PhoneDock.Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>dnsapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Discovery.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Discovery.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
