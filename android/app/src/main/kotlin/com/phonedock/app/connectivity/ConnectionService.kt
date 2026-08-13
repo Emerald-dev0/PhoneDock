@@ -23,6 +23,7 @@ class ConnectionService : Service() {
     private var serverSocket: ServerSocket? = null
     private var nsdHelper: NsdHelper? = null
     private var screenStreamer: ScreenStreamer? = null
+    private var activeClient: Socket? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_START_PROJECTION) {
@@ -54,7 +55,30 @@ class ConnectionService : Service() {
         )
         
         screenStreamer?.startStreaming { frameData, pts, isKeyFrame ->
-            // TODO: Send frameData over TCP socket to Windows
+            sendFrame(frameData, isKeyFrame)
+        }
+    }
+
+    private fun sendFrame(data: ByteArray, isKeyFrame: Boolean) {
+        activeClient?.let { socket ->
+            serviceScope.launch {
+                try {
+                    val output = socket.getOutputStream()
+                    val header = java.nio.ByteBuffer.allocate(5)
+                    header.putInt(data.size)
+                    header.put(if (isKeyFrame) 1.toByte() else 0.toByte())
+
+                    synchronized(output) {
+                        if (!socket.isClosed && socket.isConnected) {
+                            output.write(header.array())
+                            output.write(data)
+                            output.flush()
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to send frame", e)
+                }
+            }
         }
     }
 
@@ -94,6 +118,7 @@ class ConnectionService : Service() {
     private fun handleClient(socket: Socket) {
         serviceScope.launch {
             try {
+                activeClient = socket
                 val clientAddress = socket.inetAddress.hostAddress
                 Log.d(TAG, "Client connected: $clientAddress")
                 updateNotification("Connected to $clientAddress")
@@ -107,6 +132,7 @@ class ConnectionService : Service() {
                     }
                 }
                 Log.d(TAG, "Client disconnected")
+                activeClient = null
                 updateNotification("Waiting for connection...")
             } catch (e: Exception) {
                 Log.e(TAG, "Client handling error", e)

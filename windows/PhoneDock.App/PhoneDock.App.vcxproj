@@ -47,11 +47,13 @@
     <ClCompile Include="Discovery.cpp" />
     <ClCompile Include="VideoDecoder.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="SessionClient.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Discovery.h" />
     <ClInclude Include="VideoDecoder.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="SessionClient.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
