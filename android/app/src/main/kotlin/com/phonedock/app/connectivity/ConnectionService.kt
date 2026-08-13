@@ -9,6 +9,9 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import android.app.Activity
+import android.media.projection.MediaProjectionManager
+import com.phonedock.app.capture.ScreenStreamer
 import com.phonedock.app.R
 import kotlinx.coroutines.*
 import java.net.ServerSocket
@@ -19,6 +22,41 @@ class ConnectionService : Service() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var serverSocket: ServerSocket? = null
     private var nsdHelper: NsdHelper? = null
+    private var screenStreamer: ScreenStreamer? = null
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_START_PROJECTION) {
+            val resultCode = intent.getIntExtra(EXTRA_PROJECTION_RESULT_CODE, Activity.RESULT_CANCELED)
+            val data = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableExtra(EXTRA_PROJECTION_DATA, Intent::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                intent.getParcelableExtra(EXTRA_PROJECTION_DATA)
+            }
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                startProjection(resultCode, data)
+            }
+        }
+        return START_NOT_STICKY
+    }
+
+    private fun startProjection(resultCode: Int, data: Intent) {
+        val mpManager = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        val mediaProjection = mpManager.getMediaProjection(resultCode, data)
+        
+        val metrics = resources.displayMetrics
+        screenStreamer = ScreenStreamer(
+            this,
+            mediaProjection,
+            metrics.widthPixels,
+            metrics.heightPixels,
+            metrics.densityDpi
+        )
+        
+        screenStreamer?.startStreaming { frameData, pts, isKeyFrame ->
+            // TODO: Send frameData over TCP socket to Windows
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -116,5 +154,9 @@ class ConnectionService : Service() {
         private const val TAG = "ConnectionService"
         private const val CHANNEL_ID = "connection_channel"
         private const val NOTIFICATION_ID = 1
+
+        const val ACTION_START_PROJECTION = "com.phonedock.app.ACTION_START_PROJECTION"
+        const val EXTRA_PROJECTION_RESULT_CODE = "projection_result_code"
+        const val EXTRA_PROJECTION_DATA = "projection_data"
     }
 }

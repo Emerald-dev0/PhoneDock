@@ -28,7 +28,7 @@
             android:name=".connectivity.ConnectionService"
             android:enabled="true"
             android:exported="false"
-            android:foregroundServiceType="dataSync" />
+            android:foregroundServiceType="dataSync|mediaProjection" />
     </application>
 
 </manifest>

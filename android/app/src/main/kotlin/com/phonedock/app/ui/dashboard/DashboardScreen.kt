@@ -23,6 +23,7 @@ import com.phonedock.app.ui.theme.BorderGray
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
+    onStartProjection: () -> Unit = {},
     viewModel: DashboardViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -69,7 +70,13 @@ fun DashboardScreen(
             Spacer(modifier = Modifier.weight(1f))
             
             Button(
-                onClick = { viewModel.toggleService() },
+                onClick = { 
+                    if (uiState.isServiceRunning) {
+                        viewModel.toggleService()
+                    } else {
+                        onStartProjection()
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(60.dp),
