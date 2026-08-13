@@ -1,0 +1,29 @@
+# Android
+build/
+.gradle/
+*.iml
+.idea/
+local.properties
+.cxx/
+*.apk
+*.aar
+
+# Windows
+bin/
+obj/
+*.user
+*.suo
+*.sln.docstates
+x64/
+Debug/
+Release/
+*.pdb
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project
+.artifacts/
+*.tmp
