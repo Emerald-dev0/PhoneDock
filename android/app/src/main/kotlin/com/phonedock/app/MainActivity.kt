@@ -1,16 +1,5 @@
 package com.phonedock.app
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import android.content.Context
 import android.content.Intent
 import android.media.projection.MediaProjectionManager
@@ -19,8 +8,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import com.phonedock.app.connectivity.ConnectionService
 import com.phonedock.app.ui.dashboard.DashboardScreen
+import com.phonedock.app.ui.onboarding.OnboardingScreen
 import com.phonedock.app.ui.theme.PhoneDockTheme
 
 class MainActivity : ComponentActivity() {
@@ -43,10 +35,16 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PhoneDockTheme {
-                DashboardScreen(onStartProjection = {
-                    val manager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-                    projectionLauncher.launch(manager.createScreenCaptureIntent())
-                })
+                var showOnboarding by rememberSaveable { mutableStateOf(true) }
+
+                if (showOnboarding) {
+                    OnboardingScreen(onFinished = { showOnboarding = false })
+                } else {
+                    DashboardScreen(onStartProjection = {
+                        val manager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                        projectionLauncher.launch(manager.createScreenCaptureIntent())
+                    })
+                }
             }
         }
     }
