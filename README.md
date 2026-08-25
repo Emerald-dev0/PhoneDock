@@ -696,7 +696,8 @@ The actual repository structure should be kept aligned with the implementation.
 
 ## Phase 1 — Foundation
 
-* [x] Android application
+* [x] Android application (v1.1)
+* [x] Linux application (Native Python/PySide6 v1.1)
 * [/] Windows application
 * [ ] Device identity
 * [/] Basic connection
@@ -706,12 +707,13 @@ The actual repository structure should be kept aligned with the implementation.
 
 * [x] Android screen capture
 * [x] Video encoding
+* [x] Linux video decoding (PyAV)
 * [ ] Windows video decoding
 * [ ] Low-latency rendering
 
 ## Phase 3 — Remote Control
 
-* [/] Mouse input
+* [x] Mouse input (Injection foundation)
 * [ ] Keyboard input
 * [ ] Android navigation
 * [ ] Text input

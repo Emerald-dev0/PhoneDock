@@ -1,29 +1,16 @@
-# Android
-build/
 .gradle/
+.gradle_home/
+.kotlin/
+build/
+app/build/
 *.iml
 .idea/
-local.properties
-.cxx/
-*.apk
-*.aar
-
-# Windows
-bin/
-obj/
-*.user
-*.suo
-*.sln.docstates
-x64/
-Debug/
-Release/
-*.pdb
-*.log
-
-# OS
+venv/
+__pycache__/
+*.pyc
 .DS_Store
-Thumbs.db
-
-# Project
-.artifacts/
-*.tmp
+*.local
+dist/
+dist-electron/
+node_modules/
+captures/
