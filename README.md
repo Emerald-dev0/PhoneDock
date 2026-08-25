@@ -696,22 +696,22 @@ The actual repository structure should be kept aligned with the implementation.
 
 ## Phase 1 — Foundation
 
-* [ ] Android application
-* [ ] Windows application
+* [x] Android application
+* [/] Windows application
 * [ ] Device identity
-* [ ] Basic connection
+* [/] Basic connection
 * [ ] USB communication
 
 ## Phase 2 — Screen Streaming
 
-* [ ] Android screen capture
-* [ ] Video encoding
+* [x] Android screen capture
+* [x] Video encoding
 * [ ] Windows video decoding
 * [ ] Low-latency rendering
 
 ## Phase 3 — Remote Control
 
-* [ ] Mouse input
+* [/] Mouse input
 * [ ] Keyboard input
 * [ ] Android navigation
 * [ ] Text input
@@ -726,11 +726,11 @@ The actual repository structure should be kept aligned with the implementation.
 
 ## Phase 5 — Wireless
 
-* [ ] Local discovery
-* [ ] Wi-Fi connection
+* [x] Local discovery
+* [x] Wi-Fi connection
 * [ ] Pairing
 * [ ] Secure transport
-* [ ] Reconnection
+* [/] Reconnection
 * [ ] Network diagnostics
 
 ## Phase 6 — Second Display
@@ -743,7 +743,7 @@ The actual repository structure should be kept aligned with the implementation.
 
 ## Phase 7 — Production
 
-* [ ] Polished onboarding
+* [x] Polished onboarding
 * [ ] Settings
 * [ ] Diagnostics
 * [ ] Security review
