@@ -18,7 +18,9 @@ class ConnectionManager(QObject):
     def connect(self):
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket.settimeout(5.0) # 5 second timeout for initial connection
             self.socket.connect((self.address, self.port))
+            self.socket.settimeout(None) # Back to blocking for the thread
             self.running = True
             self.thread = threading.Thread(target=self._receive_loop, daemon=True)
             self.thread.start()

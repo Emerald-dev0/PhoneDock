@@ -2,9 +2,9 @@ import sys
 import struct
 from PySide6.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QHBoxLayout,
                              QWidget, QLabel, QPushButton, QStackedWidget, QFrame,
-                             QListWidget, QListWidgetItem)
-from PySide6.QtCore import Qt, Slot
-from PySide6.QtGui import QIcon
+                             QListWidget, QListWidgetItem, QMessageBox)
+from PySide6.QtCore import Qt, Slot, QSettings, QTimer
+from PySide6.QtGui import QIcon, QMovie
 
 from discovery import DiscoveryManager
 from connection import ConnectionManager
@@ -132,15 +132,32 @@ class PhoneDockApp(QMainWindow):
         card_layout = QVBoxLayout(info_card)
         card_layout.setContentsMargins(40, 40, 40, 40)
 
-        self.status_label = QLabel("Searching for devices...")
-        self.status_label.setStyleSheet(f"color: {HARVST_MUTED_GREEN}; font-size: 16px;")
-        card_layout.addWidget(self.status_label, alignment=Qt.AlignCenter)
+        self.status_label = QLabel("Looking for devices...")
+        self.status_label.setStyleSheet(f"color: {HARVST_MUTED_GREEN}; font-size: 16px; font-weight: bold;")
+        self.status_label.setAlignment(Qt.AlignCenter)
+        card_layout.addWidget(self.status_label)
+
+        # Empty state placeholder
+        self.empty_state_widget = QWidget()
+        empty_layout = QVBoxLayout(self.empty_state_widget)
+        empty_icon = QLabel("📡")
+        empty_icon.setStyleSheet("font-size: 64px;")
+        empty_icon.setAlignment(Qt.AlignCenter)
+        empty_layout.addWidget(empty_icon)
+        empty_text = QLabel("Make sure PhoneDock is open on your Android device and both are on the same Wi-Fi network.")
+        empty_text.setStyleSheet(f"color: {HARVST_MUTED_GREEN};")
+        empty_text.setWordWrap(True)
+        empty_text.setAlignment(Qt.AlignCenter)
+        empty_layout.addWidget(empty_text)
+        card_layout.addWidget(self.empty_state_widget)
 
         self.device_list = QListWidget()
+        self.device_list.hide() # Hidden by default
         card_layout.addWidget(self.device_list)
 
         self.connect_btn = QPushButton("CONNECT DEVICE")
         self.connect_btn.setObjectName("btn_primary")
+        self.connect_btn.setEnabled(False) # Disabled until device selected
         self.connect_btn.clicked.connect(self.start_connection)
         card_layout.addWidget(self.connect_btn)
 
@@ -158,10 +175,17 @@ class PhoneDockApp(QMainWindow):
 
         controls = QHBoxLayout()
         controls.setContentsMargins(20, 10, 20, 20)
-        disconnect_btn = QPushButton("DISCONNECT")
-        disconnect_btn.setStyleSheet(f"background: transparent; border: 1px solid white; color: white; padding: 8px 16px; border-radius: 8px;")
-        disconnect_btn.clicked.connect(self.stop_connection)
+
+        self.latency_label = QLabel("0 ms")
+        self.latency_label.setStyleSheet("color: white; font-weight: bold; background: rgba(0,0,0,0.3); padding: 4px 12px; border-radius: 10px;")
+        controls.addWidget(self.latency_label)
+
         controls.addStretch()
+
+        disconnect_btn = QPushButton("DISCONNECT")
+        disconnect_btn.setStyleSheet(f"background: {HARVST_CORAL}; border: none; color: white; padding: 10px 24px; border-radius: 12px; font-weight: 900;")
+        disconnect_btn.setCursor(Qt.PointingHandCursor)
+        disconnect_btn.clicked.connect(self.stop_connection)
         controls.addWidget(disconnect_btn)
 
         layout.addLayout(controls)
@@ -169,10 +193,19 @@ class PhoneDockApp(QMainWindow):
 
     @Slot(dict)
     def on_device_found(self, device):
+        # Check if already in list
+        for i in range(self.device_list.count()):
+            if device['address'] in self.device_list.item(i).text():
+                return
+
         item = QListWidgetItem(f"📱 {device['name']} ({device['address']})")
         item.setData(Qt.UserRole, device)
         self.device_list.addItem(item)
-        self.status_label.setText("Devices found on your network")
+
+        self.empty_state_widget.hide()
+        self.device_list.show()
+        self.connect_btn.setEnabled(True)
+        self.status_label.setText(f"{self.device_list.count()} device(s) discovered")
 
     @Slot(str)
     def on_device_lost(self, name):
@@ -180,27 +213,58 @@ class PhoneDockApp(QMainWindow):
             if name in self.device_list.item(i).text():
                 self.device_list.takeItem(i)
                 break
+
         if self.device_list.count() == 0:
-            self.status_label.setText("Searching for devices...")
+            self.device_list.hide()
+            self.empty_state_widget.show()
+            self.connect_btn.setEnabled(False)
+            self.status_label.setText("Looking for devices...")
+        else:
+            self.status_label.setText(f"{self.device_list.count()} device(s) discovered")
 
     def start_connection(self):
         selected = self.device_list.currentItem()
         if not selected:
+            QMessageBox.warning(self, "No Device", "Please select a device from the list first.")
             return
 
         device = selected.data(Qt.UserRole)
+        self.connect_btn.setText("CONNECTING...")
+        self.connect_btn.setEnabled(False)
+
+        # Give UI time to update
+        QApplication.processEvents()
+
         self.connection = ConnectionManager(device['address'], device['port'])
         self.connection.frame_received.connect(self.decoder.decode_frame)
+        self.connection.disconnected.connect(self.stop_connection)
         self.decoder.new_image.connect(self.video_view.update_image)
 
         if self.connection.connect():
             self.central_stack.setCurrentIndex(2)
+        else:
+            QMessageBox.critical(self, "Connection Failed", f"Could not connect to {device['name']}. Please check your network and try again.")
+            self.connect_btn.setText("CONNECT DEVICE")
+            self.connect_btn.setEnabled(True)
 
     def stop_connection(self):
         if self.connection:
             self.connection.disconnect()
             self.connection = None
         self.central_stack.setCurrentIndex(1)
+        self.connect_btn.setText("CONNECT DEVICE")
+        self.connect_btn.setEnabled(True)
+
+    def on_mouse_event(self, type_id, x, y):
+        if self.connection:
+            data = struct.pack(">Bff", type_id, x, y)
+            self.connection.send_input(data)
+
+    def closeEvent(self, event):
+        self.discovery_manager.stop()
+        self.decoder.stop()
+        self.stop_connection()
+        super().closeEvent(event)
 
     def on_mouse_event(self, type_id, x, y):
         if self.connection:
