@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=PhoneDock
+Comment=Android ↔ Windows device bridge
+Exec=/usr/bin/phonedock
+Icon=phonedock
+Terminal=false
+Categories=Utility;
+Keywords=android;bridge;remote;

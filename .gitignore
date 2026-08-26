@@ -14,3 +14,6 @@ dist/
 dist-electron/
 node_modules/
 captures/
+build_deb/
+*.spec
+*.deb
