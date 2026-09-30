@@ -67,7 +67,10 @@ VOID WINAPI DiscoveryAgent::ResolveCallback(DWORD status, PVOID context, PDNS_SE
         service.port = instance->wPort;
 
         if (instance->ip4Address != nullptr) {
-            service.ipAddress = instance->ip4Address; // Simplification for example
+            wchar_t address[INET_ADDRSTRLEN]{};
+            if (InetNtopW(AF_INET, instance->ip4Address, address, ARRAYSIZE(address)) != nullptr) {
+                service.ipAddress = address;
+            }
         }
 
         if (agent->m_onServiceFound) {
