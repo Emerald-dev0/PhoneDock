@@ -18,7 +18,7 @@ concurrency:
 jobs:
   repository-checks:
     name: Repository, documentation and source checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Check out source
@@ -40,7 +40,7 @@ jobs:
 
   linux-desktop:
     name: Linux desktop dependencies and source check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - name: Check out source
@@ -71,7 +71,7 @@ jobs:
           python scripts/smoke_desktop.py 2>&1 | tee "$RUNNER_TEMP/desktop-smoke.log"
           smoke_status=${PIPESTATUS[0]}
           if [ "$smoke_status" -ne 0 ]; then
-            diagnostics="$(grep -E '^(Traceback|  File )|^[[:space:]]*(ImportError|ModuleNotFoundError|RuntimeError|OSError|PermissionError|AssertionError):|qt\.qpa|QThread:|QObject::|QXcbConnection:' "$RUNNER_TEMP/desktop-smoke.log" | tail -n 20 || true)"
+            diagnostics="$(grep -E '^(Traceback|  File )|^[[:space:]]*([[:alnum:]_]*(Error|Exception)):|qt\.qpa|QThread:|QObject::|QXcbConnection:' "$RUNNER_TEMP/desktop-smoke.log" | tail -n 20 || true)"
             if [ -z "$diagnostics" ]; then
               diagnostics="$(tail -n 12 "$RUNNER_TEMP/desktop-smoke.log")"
             fi
@@ -86,7 +86,7 @@ jobs:
 
   android:
     name: Android unit-test task, lint and debug build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - name: Check out source
@@ -122,6 +122,31 @@ jobs:
             diagnostics=${diagnostics//'%'/'%25'}
             diagnostics=${diagnostics//$'\r'/'%0D'}
             diagnostics=${diagnostics//$'\n'/'%0A'}
+            lint_report="app/build/reports/lint-results-debug.xml"
+            if [ -f "$lint_report" ]; then
+              lint_diagnostics="$(python3 - "$lint_report" <<'PYLINT'
+          import sys
+          import xml.etree.ElementTree as ET
+
+          root = ET.parse(sys.argv[1]).getroot()
+          for issue in root.findall(".//issue"):
+              if issue.get("severity") != "Error":
+                  continue
+              locations = issue.findall("location")
+              location = locations[0] if locations else None
+              path = location.get("file", "") if location is not None else ""
+              line = location.get("line", "") if location is not None else ""
+              suffix = f" ({path}:{line})" if path else ""
+              print(f"{issue.get('id', 'LintError')}: {issue.get('message', '')}{suffix}")
+          PYLINT
+              )"
+              if [ -n "$lint_diagnostics" ]; then
+                lint_diagnostics=${lint_diagnostics//'%'/'%25'}
+                lint_diagnostics=${lint_diagnostics//$'\r'/'%0D'}
+                lint_diagnostics=${lint_diagnostics//$'\n'/'%0A'}
+                diagnostics="${diagnostics}%0AAndroid lint errors:%0A${lint_diagnostics}"
+              fi
+            fi
             printf '::error title=Android Gradle diagnostics::%s\n' "$diagnostics"
           fi
           exit "$build_status"

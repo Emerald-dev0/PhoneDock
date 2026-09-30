@@ -137,8 +137,8 @@ class OnboardingView(QWidget):
 
         pages = [
             ("One\nWorkspace.", "Turn your phone into a native extension of your Windows PC. Seamlessly integrated.", draw_merge, HARVST_CREAM, HARVST_DARK_GREEN),
-            ("Total\nControl.", "Use your mouse and keyboard to interact with Android applications directly from your desktop.", draw_control, HARVST_CORAL, Qt.white),
-            ("Seamless\nSync.", "Synchronize your clipboard and transfer files with a simple drag and drop. No cloud required.", draw_sync, HARVST_CORAL, Qt.white),
+            ("Total\nControl.", "Use your mouse and keyboard to interact with Android applications directly from your desktop.", draw_control, HARVST_CORAL, QColor(Qt.white)),
+            ("Seamless\nSync.", "Synchronize your clipboard and transfer files with a simple drag and drop. No cloud required.", draw_sync, HARVST_CORAL, QColor(Qt.white)),
             ("Double\nthe View.", "Transform your Android device into a secondary high-resolution display for your PC.", draw_view, HARVST_CREAM, HARVST_DARK_GREEN)
         ]
 
@@ -183,7 +183,7 @@ class OnboardingView(QWidget):
         self.bottom_bar.setStyleSheet(f"background-color: {bg.name()};")
 
         btn_bg = HARVST_DARK_GREEN if bg == HARVST_CREAM else HARVST_CREAM
-        btn_text = Qt.white if bg == HARVST_CREAM else HARVST_DARK_GREEN
+        btn_text = QColor(Qt.white) if bg == HARVST_CREAM else HARVST_DARK_GREEN
 
         self.next_btn.setStyleSheet(f"""
             QPushButton {{
