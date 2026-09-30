@@ -3,6 +3,16 @@ package com.phonedock.app.ui.theme
 import androidx.compose.ui.graphics.Color
 
 /**
+ * Legacy palette used by the current onboarding prototype. It is not a finalized
+ * PhoneDock brand palette; see docs/DESIGN_SYSTEM.md for the proposal.
+ */
+val HarvstCream = Color(0xFFF5F2E9)
+val HarvstCoral = Color(0xFFF15937)
+val HarvstDarkGreen = Color(0xFF0D2B24)
+val HarvstMutedGreen = Color(0xFF4A675D)
+val HarvstTan = Color(0xFFE5DDC8)
+
+/**
  * PhoneDock Natural Tones Palette
  * Based on Premium Minimalism / Apple-like aesthetics.
  */

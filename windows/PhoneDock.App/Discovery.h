@@ -2,6 +2,7 @@
 
 #include <windows.h>
 #include <windns.h>
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <functional>
