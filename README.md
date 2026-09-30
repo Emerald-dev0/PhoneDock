@@ -44,7 +44,7 @@ PhoneDock is intended to have six application targets. They will not have identi
 
 | Target | Intended experience | Repository evidence today |
 |---|---|---|
-| **Android** | Native mobile companion; the initial phone-side target for user-consented screen capture and supported integrations. | Kotlin/Jetpack Compose app, onboarding/dashboard, NSD/TCP service and MediaProjection/MediaCodec source. Build/runtime/hardware behavior remains unverified; key session and UI wiring is incomplete. |
+| **Android** | Native mobile companion; the initial phone-side target for user-consented screen capture and supported integrations. | Kotlin/Jetpack Compose app, onboarding/dashboard, NSD/TCP service and MediaProjection/MediaCodec source. Hosted CI lint/debug build passes; runtime/hardware behavior remains unverified and key session/UI wiring is incomplete. |
 | **iOS** | Native SwiftUI companion using Apple's platform conventions and materials. Capabilities must follow iOS APIs and policy; do not promise Android-equivalent capture, background operation or remote input. | No iOS source, Xcode project or assets found. |
 | **Linux desktop** | Desktop device discovery/management and, when implemented, Android viewing/control, transfer and diagnostics. | Python/PySide6 UI, `zeroconf` discovery, TCP receiver and PyAV decoder code exist. They are prototype/unverified and have no product test suite. |
 | **Windows desktop** | Native-feeling Windows workspace and supported Android receiver/control workflows. | C++ project explores DNS-SD, Winsock, Media Foundation and Direct3D 11. Decoder/render methods are unfinished; the separate display-driver project has no implementation source. |
@@ -95,7 +95,7 @@ Discovery is not authentication. A device name, IP address or service announceme
 | Android discovery/session | NSD registration, ephemeral TCP listener and client acceptance are implemented in source but not verified. No pairing, authentication, session negotiation or input reader is present. |
 | Android capture | MediaProjection/AVC capture and frame callbacks exist, but the encoder/service lifecycle and receiver path have not been verified on hardware. |
 | Linux client | PySide6 onboarding/discovery screens, Zeroconf browser, TCP parser, PyAV decoder and mouse-message sender exist. Integration is unverified; the Android side does not consume those input messages. |
-| Windows client | DNS-SD, TCP receive and decoder/renderer scaffolding exist; decode/render contains TODOs and no runtime build/result is available yet. |
+| Windows client | DNS-SD, TCP receive and decoder/renderer scaffolding exist; hosted CI compiles the x64 Release app, but decode/render contains TODOs and runtime behavior is unverified. |
 | Shared protocol | Similar length-prefixed frame code exists independently in Android, Linux and Windows. The Windows header has unused PDP version/port constants. There is no finalized protocol or compatibility claim. |
 | Other product features | USB, pairing/trusted identity, files, clipboard, notification forwarding, media controls, transfer history, diagnostics and working second-display support were not found. |
 | iOS/macOS/web | No application/site implementation was found. |
@@ -183,9 +183,9 @@ python3 -m compileall -q desktop
 bash -n desktop/run_desktop.sh desktop/build_deb.sh
 ```
 
-GitHub Actions is configured for pull requests and pushes to `main`. It runs documentation/repository and source checks, the Linux Python dependency/import job, Android Gradle unit-test/lint/debug build tasks, and a Windows C++ application build attempt. Jobs use read-only repository permissions, pinned action commit SHAs, timeouts and cancellation for superseded CI. The driver, Apple apps and web app are not claimed as built because their required implementation/configuration is missing.
+GitHub Actions runs on pull requests and pushes to `main`, with documentation/repository and source checks, Linux dependency imports plus an offscreen UI smoke, Android Gradle test-task/lint/debug build tasks, and a Windows C++ application build. Jobs use read-only repository permissions, pinned Node 24 action commits, timeouts, Ubuntu 24.04 runners, and cancellation for superseded CI. The driver, Apple apps, and web app are not claimed as built because their implementation/configuration is missing.
 
-A locally parsed workflow file is not a successful GitHub Actions run. Local Python dependency installation, `pip check`, top-level package imports (`PySide6`, PyAV and Zeroconf), source compilation and shell syntax pass; importing Qt widgets/running the offscreen UI smoke could not run here because system `libGL.so.1` is absent. The Android build could not start locally because Java/Android SDK were unavailable, and Windows could not be built on this Linux environment. No hardware or end-to-end test is claimed. Read [TESTING.md](docs/TESTING.md) for verification levels and test cases.
+Hosted PR run [36650681493](https://github.com/Emerald-dev0/PhoneDock/actions/runs/36650681493) passed all configured jobs, including Android lint/debug assembly and a Windows x64 Release build. Android has no test source files, the Windows result is compile-only, and the Linux smoke is not a real device/network session. Locally, Python dependency installation, `pip check`, top-level imports, source compilation and shell syntax pass; Qt widget/offscreen launch is blocked by missing system `libGL.so.1`, and local Android/Windows builds are unavailable without their toolchains. No end-to-end or hardware test is claimed. Read [TESTING.md](docs/TESTING.md) for verification levels and test cases.
 
 ## Releases and updates
 
