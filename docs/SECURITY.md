@@ -60,7 +60,7 @@ This phase adds documentation and CI/repository safeguards, not a security imple
 - Request permissions just in time and explain why they are needed; denial should leave unrelated features usable.
 - Keep mobile UI, foreground/background services, file pickers, notification listeners and accessibility/developer access separate in purpose and lifecycle.
 - Re-check capabilities after permission changes, OS updates, display changes, network changes and process restart.
-- Review the Android manifest and `android:allowBackup="true"` as persistent sensitive state is introduced. Existing manifest includes internet/network-state/Wi-Fi-state and foreground-service/media-projection permissions; no notification-listener, storage, clipboard-sync or input-injection integration was found.
+- Review the Android manifest and `android:allowBackup="true"` as persistent sensitive state is introduced. The Android manifest declares local-network, foreground-service/media-projection, and `POST_NOTIFICATIONS` permissions. The prototype requests notification permission in context before screen-capture consent and skips notification updates when it is denied; that status notification is distinct from notification-listener access/forwarding, which is not implemented. Storage, clipboard-sync and input-injection integrations were not found.
 - Windows driver installation/signing, macOS/iOS privacy prompts, and browser local-network permissions require platform-specific review before those features are advertised.
 
 ## Logging and diagnostics policy

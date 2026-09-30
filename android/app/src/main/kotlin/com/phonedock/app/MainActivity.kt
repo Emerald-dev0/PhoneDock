@@ -1,8 +1,11 @@
 package com.phonedock.app
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.media.projection.MediaProjectionManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,6 +20,13 @@ import com.phonedock.app.ui.theme.PhoneDockTheme
 
 class MainActivity : ComponentActivity() {
 
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {
+        // Notification access is separate from the user's MediaProjection consent.
+        requestScreenCaptureConsent()
+    }
+
     private val projectionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -30,6 +40,21 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            requestScreenCaptureConsent()
+        }
+    }
+
+    private fun requestScreenCaptureConsent() {
+        val manager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        projectionLauncher.launch(manager.createScreenCaptureIntent())
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -40,10 +65,7 @@ class MainActivity : ComponentActivity() {
                 if (showOnboarding) {
                     OnboardingScreen(onFinished = { showOnboarding = false })
                 } else {
-                    DashboardScreen(onStartProjection = {
-                        val manager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-                        projectionLauncher.launch(manager.createScreenCaptureIntent())
-                    })
+                    DashboardScreen(onStartProjection = { requestNotificationPermission() })
                 }
             }
         }
