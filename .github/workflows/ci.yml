@@ -66,7 +66,21 @@ jobs:
       - name: Run a short offscreen UI smoke check
         env:
           QT_QPA_PLATFORM: offscreen
-        run: python scripts/smoke_desktop.py
+        run: |
+          set +e
+          python scripts/smoke_desktop.py 2>&1 | tee "$RUNNER_TEMP/desktop-smoke.log"
+          smoke_status=${PIPESTATUS[0]}
+          if [ "$smoke_status" -ne 0 ]; then
+            diagnostics="$(grep -E '^(Traceback|  File )|^[[:space:]]*(ImportError|ModuleNotFoundError|RuntimeError|OSError|PermissionError|AssertionError):|qt\.qpa|QThread:|QObject::|QXcbConnection:' "$RUNNER_TEMP/desktop-smoke.log" | tail -n 20 || true)"
+            if [ -z "$diagnostics" ]; then
+              diagnostics="$(tail -n 12 "$RUNNER_TEMP/desktop-smoke.log")"
+            fi
+            diagnostics=${diagnostics//'%'/'%25'}
+            diagnostics=${diagnostics//$'\r'/'%0D'}
+            diagnostics=${diagnostics//$'\n'/'%0A'}
+            printf '::error title=Qt UI smoke diagnostics::%s\n' "$diagnostics"
+          fi
+          exit "$smoke_status"
       - name: Compile desktop Python source
         run: python -m compileall -q desktop scripts
 
@@ -101,6 +115,14 @@ jobs:
               tail -n 100 "$RUNNER_TEMP/android-gradle.log"
               printf '\n```\n'
             } >> "$GITHUB_STEP_SUMMARY"
+            diagnostics="$(grep -Ei '(^e: |^> Task .*FAILED|^\* What went wrong:|^Execution failed for task|^FAILURE:|^Could not (find|resolve)|Caused by:|^[[:space:]]*> (Could not|Execution failed))' "$RUNNER_TEMP/android-gradle.log" | tail -n 12 || true)"
+            if [ -z "$diagnostics" ]; then
+              diagnostics="$(tail -n 12 "$RUNNER_TEMP/android-gradle.log")"
+            fi
+            diagnostics=${diagnostics//'%'/'%25'}
+            diagnostics=${diagnostics//$'\r'/'%0D'}
+            diagnostics=${diagnostics//$'\n'/'%0A'}
+            printf '::error title=Android Gradle diagnostics::%s\n' "$diagnostics"
           fi
           exit "$build_status"
 
@@ -133,5 +155,11 @@ jobs:
             $summary += Get-Content -LiteralPath $buildLog -Tail 100
             $summary += @('```', '')
             Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value ($summary -join [Environment]::NewLine)
+            $diagnosticLines = Get-Content -LiteralPath $buildLog | Select-String -Pattern '(fatal error|error\s+(C|LNK|MSB)\d+|MSB\d{4}|LNK\d{4})' | Select-Object -First 12 | ForEach-Object { $_.Line }
+            if (-not $diagnosticLines) {
+              $diagnosticLines = Get-Content -LiteralPath $buildLog -Tail 12
+            }
+            $diagnostics = ($diagnosticLines -join "`n").Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Output "::error title=Windows MSBuild diagnostics::$diagnostics"
             exit $buildStatus
           }
