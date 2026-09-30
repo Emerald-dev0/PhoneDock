@@ -11,7 +11,7 @@ At the audited baseline no application test source or cross-platform test suite 
 1. **Static/repository checks:** documentation links and required files, XML project/resource parseability, Python syntax, shell syntax, formatting/lint only where configured. These catch source/repository defects but do not execute the app.
 2. **Unit tests:** pure state transitions, parsers, capability filtering, file-name/size validation, clipboard loop prevention, metrics and view-model behavior. Keep OS APIs behind testable boundaries.
 3. **Protocol/component integration:** language-independent vectors for version/envelope parsing; bounded input and malformed-message tests; discovery/transport/session integration with fake peers; transfer checksums and cancellation.
-4. **Platform tests:** Android permission/service lifecycle and Compose UI; Linux Qt behavior and package checks on declared distributions; Windows build and Media Foundation/render path; Apple Xcode/simulator tests when apps exist; web browser/accessibility tests when source exists.
+4. **Platform tests:** Android permission/service lifecycle and Compose UI; Linux Qt behavior and package checks on declared distributions; Windows build and Media Foundation/render path; native iOS XCTest/XCUITest on macOS and the official iOS Simulator when the Phase 4 app exists; web browser/accessibility tests when source exists.
 5. **Hardware/network tests:** named real Android devices and host hardware, real Wi-Fi/USB, codec and display behavior, network interruption, sleep/resume, thermal/battery and sustained-use behavior. Record exact OS, device, network, build and result.
 
 Mocks can isolate dependencies in unit tests but must not be presented as evidence that the real feature is integrated.
@@ -50,7 +50,7 @@ Windows application (Visual Studio Developer PowerShell, C++ workload, Windows S
 msbuild windows\PhoneDock.App\PhoneDock.App.vcxproj /m /p:Configuration=Release /p:Platform=x64 /p:AppxPackage=false
 ```
 
-No local iOS, macOS or web command exists because those projects are absent. The Windows driver project is not in the build command: it has no implementation source and needs a WDK-equipped, signed test plan.
+No iOS, macOS desktop, or web build command exists today because those projects are absent. Phase 4 plans to add the iOS app and simulator CI on macOS/Xcode; no iOS Simulator runs on Linux and no custom emulator will be built. The Windows driver project is not in the build command: it has no implementation source and needs a WDK-equipped, signed test plan.
 
 ## Continuous integration
 
@@ -61,9 +61,23 @@ No local iOS, macOS or web command exists because those projects are absent. The
 - Android unit-test task, lint, and debug assembly on Linux with JDK 17 and the runner's Android SDK;
 - Windows application C++ build on a Windows runner.
 
-There is no iOS/macOS job because no Apple project exists; no web job because no web project exists; no driver job because implementation sources/WDK configuration are absent. Expand the matrix when a real project and repeatable command are added. CI YAML/static parsing locally is not an Actions run; report the run/check state separately.
+There is no iOS/macOS CI job yet because no Apple app project exists; no web job because no web project exists; and no driver job because implementation sources/WDK configuration are absent. Phase 4 will add the iOS job with a real Xcode project and repeatable simulator command. Expand other matrix entries only when a real project and repeatable command exist. CI YAML/static parsing locally is not an Actions run; report the run/check state separately.
 
 The Android JUnit/Espresso tasks currently have no test source. CI therefore verifies build/lint and task configuration but does not validate feature behavior. The Linux job verifies dependency resolution/imports, syntax, and a short offscreen UI construction/event-loop smoke; it does not verify interactive GUI behavior, mDNS reachability, H.264 hardware behavior, or packaging. The Windows job validates only the app project build, not video output, network behavior, or the driver.
+
+## Planned iOS verification — Phase 4 (not configured or run)
+
+There is currently no iOS app, Xcode project/scheme, macOS CI job, simulator test result, or physical-device result. The following is a plan, not a claim that these checks exist or have passed. The detailed app scope, API/policy investigation, signing prerequisites and canonical borrowed-iPhone checklist live in [ROADMAP.md](ROADMAP.md).
+
+When the real Swift/SwiftUI project begins:
+
+- Add a least-privilege GitHub Actions job on an available macOS runner with its installed Xcode/iOS SDK and official iOS Simulator. At phase kickoff, verify the runner image, Xcode version, simulator runtime and destination; record those versions so results are reproducible.
+- Run Xcode build and XCTest on a simulator destination. Add XCUITest smoke coverage for app launch, device-list and pairing/session navigation, settings, accessibility identifiers, and practical permission-denied/recovery states. Keep protocol, discovery and state logic injectable so unit tests can use deterministic fakes.
+- Simulator CI can check Swift compilation, unit/state logic, view integration, navigation, layout and basic UI automation without a personal Mac or iPhone. Label the result **macOS/iOS Simulator CI**, never physical-device verified.
+- Use simulator builds that do not require distribution credentials where the selected Xcode setup allows it. Never expose Apple signing secrets to untrusted pull-request code. Confirm the current signing/provisioning requirements separately before installing on a borrowed iPhone or distributing an app.
+- Do not infer real Wi-Fi/Bonjour/multicast reliability, device privacy-prompt behavior, inter-device interoperability, sustained background execution, capture/mirroring, battery or thermal performance from a simulator run. Those require the borrowed-iPhone checklist in the roadmap and a compatible peer.
+
+The official iOS Simulator is supplied by Xcode on macOS. It does not run on this Linux environment; PhoneDock will not build a custom emulator. No Apple runner, Xcode project, simulator command, or iOS test suite is added by this documentation-only change.
 
 ## Required failure and resilience coverage before features ship
 

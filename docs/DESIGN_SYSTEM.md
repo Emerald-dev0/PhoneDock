@@ -38,7 +38,7 @@ These are exploratory hex values, not an approved brand palette. Verify WCAG con
 - **Dark:** deep ink canvas, distinct raised ink-blue surfaces, light text, controlled accent brightness and visible focus/selection.
 - **Layering:** thin borders, low-elevation shadows and restrained translucent overlays should clarify hierarchy. Maintain an opaque fallback when blur/material effects are unsupported, expensive, or inaccessible.
 - **Android:** use native Compose/Android materials and APIs supported by the app's actual min/target SDK. A Liquid Glass-inspired treatment may use layered translucent surfaces, subtle highlights and depth; avoid claiming Apple's Liquid Glass API exists on Android or relying on unsupported system APIs. Test blur cost, scroll performance, contrast and fallback behavior.
-- **iOS:** use native SwiftUI conventions and Apple materials; adopt Liquid Glass APIs only on OS versions that provide them and keep a clear graceful fallback for older supported systems. No iOS project is present yet.
+- **iOS (planned Phase 4):** build with native SwiftUI conventions and Apple materials; adopt Liquid Glass only on iOS versions that support it and provide a clear, accessible fallback for older supported systems. The real Xcode app is not present yet; the Phase 4 capability and verification gates are in [ROADMAP.md](ROADMAP.md).
 - **Desktop:** respect Linux desktop theme/session behavior, Windows controls/window conventions, and macOS system materials. Shared brand tokens must not force identical chrome or controls across these environments.
 - **Web:** support responsive layouts, keyboard focus, accessible contrast and reduced motion; use browser-safe progressive enhancement.
 

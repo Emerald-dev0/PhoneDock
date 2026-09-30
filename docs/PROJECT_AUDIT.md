@@ -14,7 +14,7 @@ PhoneDock is a small collection of platform-specific experiments, not yet a comp
 - A Python/PySide6 Linux desktop prototype with Zeroconf browsing, a TCP frame receiver, a PyAV H.264 decoder, and a custom video widget.
 - A C++ Windows console/application prototype with DNS-SD browsing, Winsock receiving, Media Foundation decoder scaffolding, and Direct3D 11 renderer scaffolding. A separate driver project file and a shared Windows header exist, but no driver implementation source was found.
 
-Hosted CI now builds/lints the Android module, constructs the Linux UI in offscreen mode, and compiles the Windows x64 application project. Those checks do not establish that Android/Linux/Windows networking and video code work together: no product test suite, end-to-end, or hardware result exists, and the Windows decoder/renderer remain incomplete. There is no iOS, macOS, or web application source, no cross-platform shared library, no finalized protocol, no pairing/authentication implementation, no file-transfer or clipboard implementation, and no pre-existing CI workflow or test suite.
+Hosted CI now builds/lints the Android module, constructs the Linux UI in offscreen mode, and compiles the Windows x64 application project. Those checks do not establish that Android/Linux/Windows networking and video code work together: no product test suite, end-to-end, or hardware result exists, and the Windows decoder/renderer remain incomplete. There is no iOS, macOS, or web application source; a native iOS app is explicitly scheduled for Phase 4 after shared foundations, but has not started. There is no cross-platform shared library, finalized protocol, pairing/authentication implementation, file-transfer or clipboard implementation, or pre-existing CI workflow/test suite.
 
 The previous root README described a broad intended product and future architecture. It was not evidence that those capabilities existed. This phase adds a documented specification and a CI foundation while preserving the existing applications and their assets.
 
@@ -112,7 +112,7 @@ Statuses below describe repository evidence, not product aspirations. “Verifie
 | Windows display driver / Android second display | **Prototype or mockup** | `PhoneDock.Common/Public.h` contains GUID/IOCTL declarations and the driver project file exists, but no driver source or working display extension was found. Android onboarding only illustrates/promises the goal. |
 | Clipboard, file transfer, transfer inbox/history, links/content handoff, notification forwarding, media controls, trusted-device management, diagnostics/performance telemetry | **Planned but not found** | No implementation or tests found. A foreground-service status notification is not notification forwarding. |
 | USB connectivity, manual host/IP connection, automatic reconnection, authenticated pairing/trust | **Planned but not found** | Existing prototypes use local DNS-SD discovery and a TCP connection only; no USB adapter, manual connection UI, pairing, authentication, persistent identity, or reconnect state machine was found. |
-| iOS, macOS, and web product experiences | **Planned but not found** | No project source or platform configuration exists. |
+| iOS product experience | **Planned for Phase 4; not implemented** | No Swift/SwiftUI source, Xcode project or platform configuration exists yet. The roadmap schedules a real native companion after Phases 1–3. |
 
 ## Existing protocol and architecture evidence
 
@@ -168,7 +168,7 @@ The Windows runner's x64 Release build of this application project passes in CI 
 
 ### iOS, macOS, and web
 
-No build/test command exists because those applications and build configurations were not found. Xcode and Apple SDK availability are later prerequisites, not evidence of an existing app.
+No build/test command exists yet because these projects/configurations were not found. The native iOS app has a dedicated Phase 4 plan; its Xcode project and app/test targets are to be created when that phase begins. macOS/Xcode access is a prerequisite, not evidence of an existing app or completed build.
 
 ### Repository checks added by Phase 0
 
@@ -252,6 +252,6 @@ Recommended next steps:
 5. Build a repeatable Linux development environment and replace misleading packaging metadata before any artifact is distributed.
 6. Select the protocol and security design through explicit ADRs, after comparing the existing frame code and actual platform constraints.
 7. Design pairing/device identity and testable session states before expanding connection features.
-8. Only then implement additional features/platform projects; keep iOS, macOS, web, and shared-core choices evidence-led.
+8. After Phases 1–3 define product, protocol, trust and capability boundaries, start the dedicated Phase 4 native iOS project; do not defer it behind later Android-only feature phases. Keep macOS desktop, web, and shared-core decisions separately evidence-led.
 
 The detailed sequence and completion criteria are in [ROADMAP.md](ROADMAP.md).

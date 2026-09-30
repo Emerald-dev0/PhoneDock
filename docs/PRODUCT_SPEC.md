@@ -8,6 +8,8 @@ PhoneDock aims to make a person's physical devices work together as one coherent
 
 PhoneDock is a product family targeting Android, iOS, Linux, Windows, macOS, and the web. It is not a promise that every capability is available on every operating system. A device's actual APIs, permissions, hardware, network, and user settings determine what can be offered.
 
+The iOS target is a real native-app objective, not a documentation-only entry. Its first planned slice is compatible-peer discovery, explicit pairing/trust, truthful session status, and useful settings, gated on the shared protocol/security foundation and Apple's current API/policy review. Screen capture, mirroring, remote input, background operation, clipboard and notification behavior are separate iOS feasibility decisions; Android parity is not assumed. The implementation phase and borrowed-device gate are specified in [ROADMAP.md](ROADMAP.md).
+
 ## Target users and workflows
 
 - **People working across a phone and computer:** pair devices on a local network, view an Android screen on a desktop, and move selected content without an unrelated cloud workflow.
@@ -48,6 +50,7 @@ Acceptance criteria below define the expected product behavior. They are propose
 | FR-15 | **Diagnostics and performance.** Surface useful, user-controlled connection/capture/transfer diagnostics and meaningful measurements such as latency, frame/transfer rate, and errors only when calculated from real measurements. | Deterministic metric definitions, instrumentation tests, throttling/overhead checks, export/log privacy tests, and network/codec failure injection. No fabricated metrics. |
 | FR-16 | **Android as an additional display.** Where technically supported, provide a separate display extension with explicit platform prerequisites and safe uninstall/recovery behavior. | A maintained display implementation/driver, OS/hardware compatibility matrix, install/uninstall/recovery tests, and real-device latency/reliability evidence. A static driver project or IOCTL header is not acceptance. |
 | FR-17 | **Native-feeling, accessible applications.** Each app follows platform conventions, responds to system appearance and text scaling where supported, is keyboard/screen-reader usable, and honors reduced-motion preferences. | Accessibility review and automated checks where available; platform UI tests; contrast/focus/large-text/reduced-motion evidence. |
+| FR-18 | **Native iOS companion.** Provide a Swift/SwiftUI iPhone app with supported peer discovery, explicit approve/reject/revoke trust, accurate connection/session status, cancellation/disconnection, and useful privacy/connection settings with actionable permission help and privacy-safe diagnostics. Add other workflows only after current Apple API, entitlement, background, network and policy review; do not promise system-wide capture, mirroring, remote input or Android feature parity without evidence. | Real Xcode project and app/test targets; macOS CI build plus XCTest and practical XCUITest on the official iOS Simulator; documented per-capability API/policy decisions; borrowed-iPhone checklist recorded before any physical-device or support claim. |
 
 ## Nonfunctional requirements
 
@@ -71,4 +74,4 @@ Acceptance criteria below define the expected product behavior. They are propose
 
 ## Implementation status
 
-At the audited baseline, Android, Linux, and Windows contain prototypes described in [PROJECT_AUDIT.md](PROJECT_AUDIT.md). iOS, macOS, and web source was not found. Pairing, authenticated encryption, file transfer, clipboard synchronization, notification forwarding, media controls, persistent device management, and production second-display support were not found. Use [FEATURE_STATUS.md](FEATURE_STATUS.md) and [ROADMAP.md](ROADMAP.md) to track evidence and phase completion.
+At the audited baseline, Android, Linux, and Windows contain prototypes described in [PROJECT_AUDIT.md](PROJECT_AUDIT.md). iOS, macOS, and web source was not found; a real native iOS implementation is planned for Phase 4, after Phases 1–3, but has not started. Pairing, authenticated encryption, file transfer, clipboard synchronization, notification forwarding, media controls, persistent device management, and production second-display support were not found. Use [FEATURE_STATUS.md](FEATURE_STATUS.md) and [ROADMAP.md](ROADMAP.md) to track evidence and phase completion.

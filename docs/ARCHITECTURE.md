@@ -119,6 +119,14 @@ Return structured failures across discovery, pairing, transport, permission, cod
 
 UI layers should observe lifecycle-safe state and issue intent; they should not own long-lived sockets, encoders or retry loops. Background services need explicit cancellation and cleanup. Android `DashboardViewModel` currently toggles a local boolean instead of binding to `ConnectionService`; `VideoDecoderThread` starts a `QThread` but does not override `run`, so thread affinity needs review; the C++ entry point is a console program. These are implementation gaps, not architectural recommendations already applied.
 
+## iOS project boundary planned for Phase 4
+
+The iOS implementation is a real native-app phase, but no iOS project exists yet. At Phase 4 kickoff, create an Xcode project and real SwiftUI app/test targets; do not add a placeholder target in advance. Keep platform presentation and OS APIs native, and adapt to the protocol, trust and capability interfaces delivered by Phases 2–3 rather than inventing a separate wire protocol.
+
+A small initial feature boundary should cover the app lifecycle, device discovery, explicit pairing/trust, session status and settings. Organize only code that exists—for example, `App`, `Devices`, `Pairing`, `Session`, `Settings`, platform/network adapters, shared domain models, app resources, `PhoneDockTests` and `PhoneDockUITests`. Use SwiftUI views for presentation and testable services/state objects for connection flows; do not create speculative packages merely to mirror this outline.
+
+Treat ReplayKit/capture, mirroring, remote input, background work and local/inter-device networking as platform-adapter feasibility decisions, not assumed shared capabilities. Record the supported OS range, required user consent/declarations/entitlements and fallback in an ADR and [PLATFORM_SUPPORT.md](PLATFORM_SUPPORT.md) before advertising them. Simulator verification is planned on macOS/Xcode; the borrowed-iPhone checklist in [ROADMAP.md](ROADMAP.md) remains the gate for physical-device claims. No iOS source or test result currently exists.
+
 ## Repository layout and migration policy
 
 ### Keep the existing applications in place
@@ -137,7 +145,7 @@ docs/                   # requirements, audit, architecture, security, tests, de
 .github/workflows/      # CI and version-tag release policy
 scripts/                # repository checks and maintained build/release helpers
 
-ios/                    # only when an actual SwiftUI project is approved
+ios/                    # create the real SwiftUI app/test project at Phase 4; no placeholder before then
 macos/                  # only when an actual Mac application is approved
 web/                    # only when a maintained site/app is approved
 shared/ or packages/    # only after a boundary, language and owner are justified
