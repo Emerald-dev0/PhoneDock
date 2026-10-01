@@ -41,6 +41,7 @@ A proposed high-level sequence is: discover or manually locate candidate → use
 - Direct local transport is the default product goal. Wi-Fi and USB adapters should share the same authorization semantics where practical, while documenting platform-specific setup.
 - Define bind address, ports, reconnect policy, timeouts, backpressure, partial reads/writes and how active-client limits are enforced.
 - A future browser client must use only transport APIs and permission models actually available in supported browsers; do not assume arbitrary TCP sockets.
+- The planned iOS adapter must honor Local Network privacy, Bonjour declarations, and foreground/background lifecycle limits; do not encode an assumption that discovery or a raw socket remains active in the background. Generic iPhone-to-PC USB is not a baseline transport; see the feasibility gate in [PLATFORM_SUPPORT.md](PLATFORM_SUPPORT.md).
 - Decide whether media and data share one protected stream or use separate negotiated channels only after profiling and threat-model review.
 
 ## Versioning and compatibility policy (proposed)

@@ -125,7 +125,11 @@ The iOS implementation is a real native-app phase, but no iOS project exists yet
 
 A small initial feature boundary should cover the app lifecycle, device discovery, explicit pairing/trust, session status and settings. Organize only code that exists—for example, `App`, `Devices`, `Pairing`, `Session`, `Settings`, platform/network adapters, shared domain models, app resources, `PhoneDockTests` and `PhoneDockUITests`. Use SwiftUI views for presentation and testable services/state objects for connection flows; do not create speculative packages merely to mirror this outline.
 
-Treat ReplayKit/capture, mirroring, remote input, background work and local/inter-device networking as platform-adapter feasibility decisions, not assumed shared capabilities. Record the supported OS range, required user consent/declarations/entitlements and fallback in an ADR and [PLATFORM_SUPPORT.md](PLATFORM_SUPPORT.md) before advertising them. Simulator verification is planned on macOS/Xcode; the borrowed-iPhone checklist in [ROADMAP.md](ROADMAP.md) remains the gate for physical-device claims. No iOS source or test result currently exists.
+Treat screen capture/mirroring, remote input, background work, USB, clipboard/notifications, and local/inter-device networking as per-feature platform decisions, not shared capabilities. Apple's iOS 27 ScreenCaptureKit path is beta at the 2026-10-01 research snapshot; the current ReplayKit recording/broadcast references mark major APIs deprecated in iOS 27. Record supported OS range, user consent, declarations/entitlements, distribution/policy status, simulator-vs-hardware scope, and fallback in an ADR and [PLATFORM_SUPPORT.md](PLATFORM_SUPPORT.md) before advertising any feature. Simulator verification is planned on macOS/Xcode; the borrowed-iPhone checklist in [ROADMAP.md](ROADMAP.md) remains the gate for physical-device claims. No iOS source or test result currently exists.
+
+## macOS build host versus macOS product
+
+macOS has two separate roles in the plan. Phase 4 uses official macOS/Xcode runners to build and test the iOS target in Apple's Simulator; this is build infrastructure, not a PhoneDock Mac application. Phase 9 is a separate native macOS product with its own app target, platform permissions, test destination, and support evidence. A runner or shared Swift source does not complete the Mac product, and the Mac app is not a prerequisite for iOS CI. No macOS app source/project exists today.
 
 ## Repository layout and migration policy
 

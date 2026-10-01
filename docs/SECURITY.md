@@ -62,6 +62,7 @@ This phase adds documentation and CI/repository safeguards, not a security imple
 - Re-check capabilities after permission changes, OS updates, display changes, network changes and process restart.
 - Review the Android manifest and `android:allowBackup="true"` as persistent sensitive state is introduced. The Android manifest declares local-network, foreground-service/media-projection, and `POST_NOTIFICATIONS` permissions. The prototype requests notification permission in context before screen-capture consent and skips notification updates when it is denied; that status notification is distinct from notification-listener access/forwarding, which is not implemented. Storage, clipboard-sync and input-injection integrations were not found.
 - Windows driver installation/signing, macOS/iOS privacy prompts, and browser local-network permissions require platform-specific review before those features are advertised.
+- For iOS, CryptoKit and Keychain/Security are candidate documented facilities, not a selected PhoneDock protocol, pairing design, or key-storage policy. Decide key accessibility, backup/reinstall, revocation, and recovery as part of Phases 2–3; request local-network access just in time and fail closed when trust or permission is absent. Never infer a background session or generic USB security path from Android.
 
 ## Logging and diagnostics policy
 

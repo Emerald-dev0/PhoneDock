@@ -4,7 +4,7 @@
 
 PhoneDock is a local-first cross-platform device integration project. Its goal is to help compatible phones and computers discover, trust and work with one another—without requiring a cloud account or relay for core workflows that can run directly over a local connection.
 
-> **Repository status (2026-09-30):** this is a revival-stage project, not a production-ready release. Kotlin/Compose Android, Python/PySide6 Linux and C++ Windows prototypes are present. Their networking/video behavior has not been verified end-to-end on real devices. No iOS source exists yet; a native Swift/SwiftUI companion is scheduled for Phase 4. macOS and web application source was not found. Pairing/authentication, file transfer, clipboard synchronization, notification forwarding and a working second-display implementation are not present. See the [repository audit](docs/PROJECT_AUDIT.md) for evidence and [roadmap](docs/ROADMAP.md) for the authoritative plan.
+> **Repository status (2026-10-01):** this is a revival-stage project, not a production-ready release. Kotlin/Compose Android, Python/PySide6 Linux and C++ Windows prototypes are present; their networking/video behavior is not verified end-to-end on real devices. iOS is planned as a native Swift/SwiftUI app in Phase 4; macOS as a separate native desktop app in Phase 9; and web in Phase 10. None has source yet. Pairing/authentication, file transfer, clipboard synchronization, notification forwarding and a working second-display implementation are not present. See the [repository audit](docs/PROJECT_AUDIT.md) for evidence and [roadmap](docs/ROADMAP.md) for the authoritative plan.
 
 ## Table of contents
 
@@ -45,11 +45,11 @@ PhoneDock is intended to have six application targets. They will not have identi
 | Target | Intended experience | Repository evidence today |
 |---|---|---|
 | **Android** | Native mobile companion; the initial phone-side target for user-consented screen capture and supported integrations. | Kotlin/Jetpack Compose app, onboarding/dashboard, NSD/TCP service and MediaProjection/MediaCodec source. Hosted CI lint/debug build passes; runtime/hardware behavior remains unverified and key session/UI wiring is incomplete. |
-| **iOS** | Native Swift/SwiftUI companion following Apple platform conventions; no Android parity assumption. | Planned for Phase 4; no source or Xcode project exists yet. See [ROADMAP.md](docs/ROADMAP.md) for the authoritative plan. |
+| **iOS** | Native Swift/SwiftUI companion following Apple conventions; no Android parity assumption. | Planned for Phase 4; no source or Xcode project. Official Simulator CI is planned on macOS after a real project exists; no iPhone validation has started. |
 | **Linux desktop** | Desktop device discovery/management and, when implemented, Android viewing/control, transfer and diagnostics. | Python/PySide6 UI, `zeroconf` discovery, TCP receiver and PyAV decoder code exist. They are prototype/unverified and have no product test suite. |
 | **Windows desktop** | Native-feeling Windows workspace and supported Android receiver/control workflows. | C++ project explores DNS-SD, Winsock, Media Foundation and Direct3D 11. Decoder/render methods are unfinished; the separate display-driver project has no implementation source. |
-| **macOS desktop** | First-class Mac application that respects macOS permissions, security and distribution conventions. | No macOS source, Xcode project or assets found. Technology choice remains open. |
-| **Web app and product website** | Responsive product, documentation and release information, plus only those browser utilities that are secure and supported. | No web application or website source/configuration found. A browser is not assumed to replace native device or driver APIs. |
+| **macOS desktop** | Separate native Mac workspace respecting macOS permissions, security and distribution conventions. | Planned for Phase 9; no app source/project. A future macOS runner used for iOS CI is infrastructure, not this app. |
+| **Web app and product website** | Responsive product, documentation and release information, plus only those browser utilities that are secure and supported. | Planned for Phase 10; no source/configuration. A browser is not assumed to replace native device or driver APIs. |
 
 The detailed per-platform capability matrix and test prerequisites are in [PLATFORM_SUPPORT.md](docs/PLATFORM_SUPPORT.md).
 
@@ -171,7 +171,7 @@ The driver project is not buildable as a product: it has no implementation sourc
 
 ### iOS, macOS and web
 
-There is no iOS app, Xcode project or Apple build command yet. The native Swift/SwiftUI iOS app is a scheduled Phase 4, with simulator build/unit/UI testing planned on a macOS runner; simulator results will not substitute for borrowed-iPhone verification. The official iOS Simulator runs on macOS, not Linux. See [ROADMAP.md](docs/ROADMAP.md) for the single authoritative plan and explicit capability gates. macOS desktop and web prerequisites remain to be selected when those projects are approved.
+No iOS or macOS app project or web source exists. Phase 4 plans a native Swift/SwiftUI iOS app and official Simulator tests on hosted macOS; Simulator results are not physical-iPhone evidence. Phase 9 is a separate native macOS product, and Phase 10 covers the web target. macOS CI is not a macOS app implementation. The official iOS Simulator does not run on Linux; see [ROADMAP.md](docs/ROADMAP.md) for the authoritative dependencies and capability gates.
 
 ## Build, test and CI
 
@@ -183,9 +183,9 @@ python3 -m compileall -q desktop
 bash -n desktop/run_desktop.sh desktop/build_deb.sh
 ```
 
-Current GitHub Actions runs on pull requests and pushes to `main`, with documentation/repository and source checks, Linux dependency imports plus an offscreen UI smoke, Android Gradle test-task/lint/debug build tasks, and a Windows C++ application build. Jobs use read-only repository permissions, pinned Node 24 action commits, timeouts, Ubuntu 24.04 runners, and cancellation for superseded CI. There is no iOS/macOS job yet; Phase 4 plans a macOS/Xcode simulator job when the real iOS project begins. The driver, macOS app and web app are not claimed as built.
+Current GitHub Actions covers repository/source checks, Linux desktop dependency/import and offscreen UI smoke checks, Android Gradle tasks, and a Windows C++ application build. Existing jobs are preserved. No iOS/macOS-app job exists: Phase 4 plans iOS Simulator CI only after a real Xcode project and repeatable tests exist; Phase 9's Mac app needs a separate target. The driver and web app are not claimed as built.
 
-Hosted PR run [36650681493](https://github.com/Emerald-dev0/PhoneDock/actions/runs/36650681493) passed all configured jobs, including Android lint/debug assembly and a Windows x64 Release build. Android has no test source files, the Windows result is compile-only, and the Linux smoke is not a real device/network session. Locally, Python dependency installation, `pip check`, top-level imports, source compilation and shell syntax pass; Qt widget/offscreen launch is blocked by missing system `libGL.so.1`, and local Android/Windows builds are unavailable without their toolchains. No end-to-end or hardware test is claimed. Read [TESTING.md](docs/TESTING.md) for verification levels and test cases.
+Hosted PR run [36652649534](https://github.com/Emerald-dev0/PhoneDock/actions/runs/36652649534) passed the configured repository, Linux desktop, Android, and Windows jobs. Android has no app test sources, the Windows result is compile-only, and the Linux smoke is not a real device/network session. No iOS/macOS project, Xcode job, or hardware result is claimed. Read [TESTING.md](docs/TESTING.md) for verification levels and test cases.
 
 ## Releases and updates
 
@@ -197,14 +197,14 @@ A GitHub Release does not update an installed application. Automatic update deli
 
 ## Roadmap
 
-A native iOS companion is scheduled for Phase 4 after the shared protocol, trust and session foundations. [docs/ROADMAP.md](docs/ROADMAP.md) is the single authoritative development plan, including its capability and verification gates.
+A native iOS companion is planned for Phase 4 after shared protocol/trust/session foundations; a separate native macOS app is planned for Phase 9. Hosted macOS is the planned official iOS build/Simulator environment, not a Mac app target. [docs/ROADMAP.md](docs/ROADMAP.md) is the single authoritative phase plan and verification gate.
 
 ## Limitations and open decisions
 
 - No authenticated/encrypted protocol or trusted-device pairing exists; do not use the prototypes for sensitive content.
 - No product-wide supported OS/device matrix, Linux distribution baseline, performance target or hardware validation has been established. The current x86_64 PySide6 wheel requires glibc 2.34 or newer; other Linux architectures/distributions are not verified.
 - Discovery implementations and frame parsing are duplicated across Android/Linux/Windows; their behavior is not declared interoperable.
-- Windows video rendering and driver implementation are incomplete. The iOS app is planned for Phase 4 but no source/project exists yet; macOS desktop and web source is also absent.
+- Windows video rendering and driver implementation are incomplete. The iOS app is planned for Phase 4, the native macOS app for Phase 9, and web for Phase 10; none has source/project yet.
 - The current UI/illustrations use an older “Harvst” palette; the Android launcher icon is a template icon. A premium indigo/ice-blue/porcelain/deep-ink design direction is proposed, not finalized. See [DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md).
 - The `LICENSE` file contains MIT license text but its copyright line still includes template wording. This project overview does not make a legal conclusion; maintainers should confirm attribution before making licensing/distribution claims. No license change was made.
 

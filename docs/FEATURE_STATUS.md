@@ -40,6 +40,10 @@ For each meaningful feature, keep a concise row in [PLATFORM_SUPPORT.md](PLATFOR
 
 Do not use the example row as an actual product feature. Use explicit `Not run`, `Not available`, or `Not applicable` rather than a blank cell where silence could imply success.
 
+## Capability feasibility is not implementation status
+
+The iOS public-API categories in [PLATFORM_SUPPORT.md](PLATFORM_SUPPORT.md) describe research about a scoped capability—not a PhoneDock status, Apple approval, or support claim. As of 2026-10-01, iOS is **Planned** for Phase 4 and has no source, Xcode project, CI job, Simulator result, or iPhone result; the native macOS app is planned for Phase 9 and web for Phase 10. No API classification advances any feature beyond **Planned**. Label Simulator evidence separately from physical-device evidence; do not mark iPhone validation until performed on a real device.
+
 ## Pull-request completion rule
 
 A contributor reports separately:

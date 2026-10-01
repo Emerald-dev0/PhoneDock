@@ -50,7 +50,7 @@ Windows application (Visual Studio Developer PowerShell, C++ workload, Windows S
 msbuild windows\PhoneDock.App\PhoneDock.App.vcxproj /m /p:Configuration=Release /p:Platform=x64 /p:AppxPackage=false
 ```
 
-No iOS, macOS desktop, or web build command exists today because those projects are absent. Phase 4 plans to add the iOS app and simulator CI on macOS/Xcode; no iOS Simulator runs on Linux and no custom emulator will be built. The Windows driver project is not in the build command: it has no implementation source and needs a WDK-equipped, signed test plan.
+No iOS, macOS desktop, or web build command exists today because those projects are absent. The developer's Linux Mint laptop can handle source/design/protocol work, repository checks, and portable test fixtures. Pure Swift packages can be tested on Linux only if a compatible Swift toolchain is available and the package avoids Apple-only frameworks; Linux Swift is not Xcode and cannot build SwiftUI/iOS targets or run the official iOS Simulator. Phase 4 plans official Simulator CI on a hosted macOS runner after a real iOS project and repeatable test command exist. Phase 9 is a separate macOS product target. No custom iOS emulator will be built. The Windows driver project is not in the build command: it has no implementation source and needs a WDK-equipped, signed test plan.
 
 ## Continuous integration
 
@@ -61,23 +61,41 @@ No iOS, macOS desktop, or web build command exists today because those projects 
 - Android unit-test task, lint, and debug assembly on Linux with JDK 17 and the runner's Android SDK;
 - Windows application C++ build on a Windows runner.
 
-There is no iOS/macOS CI job yet because no Apple app project exists; no web job because no web project exists; and no driver job because implementation sources/WDK configuration are absent. Phase 4 will add the iOS job with a real Xcode project and repeatable simulator command. Expand other matrix entries only when a real project and repeatable command exist. CI YAML/static parsing locally is not an Actions run; report the run/check state separately.
+There is no iOS/macOS-app CI job yet because no Apple app project/scheme exists; no web job because no web project exists; and no driver job because implementation sources/WDK configuration are absent. Phase 4 will add iOS Simulator CI only with a real Xcode app/test target and repeatable command; Phase 9's macOS product needs its own target and test evidence. The macOS runner used by iOS CI does not implement/test a macOS PhoneDock app by itself. Expand other matrix entries only when a real project and repeatable command exist. CI YAML/static parsing locally is not an Actions run; report the run/check state separately.
 
 The Android JUnit/Espresso tasks currently have no test source. CI therefore verifies build/lint and task configuration but does not validate feature behavior. The Linux job verifies dependency resolution/imports, syntax, and a short offscreen UI construction/event-loop smoke; it does not verify interactive GUI behavior, mDNS reachability, H.264 hardware behavior, or packaging. The Windows job validates only the app project build, not video output, network behavior, or the driver.
 
 ## Planned iOS verification — Phase 4 (not configured or run)
 
-There is currently no iOS app, Xcode project/scheme, macOS CI job, simulator test result, or physical-device result. The following is a plan, not a claim that these checks exist or have passed. The detailed app scope, API/policy investigation, signing prerequisites and canonical borrowed-iPhone checklist live in [ROADMAP.md](ROADMAP.md).
+There is no iOS app, Xcode project/scheme, macOS iOS-CI job, Simulator result, or physical-device result. This is a plan, not an assertion that any Apple check exists or has passed. The canonical phase dependencies, API/policy matrix, signing boundary, and not-started borrowed-iPhone checklist are in [ROADMAP.md](ROADMAP.md) and [PLATFORM_SUPPORT.md](PLATFORM_SUPPORT.md).
+
+**Verified toolchain snapshot (2026-10-01; recheck at Phase 4 kickoff):** the public repository can use GitHub's standard hosted `macos-26` runner (Apple silicon; `macos-26-intel` is also listed). The current `macos-26` runner-image readme lists stable Xcode 26.6, the iOS 26.5 SDK/Simulator runtime, and installed iPhone Simulator devices. Apple's Xcode requirements list the Swift 6.3 compiler with Xcode 26.6. Xcode 27 is a public preview and iOS 27 APIs are beta at this snapshot, so they are not the required CI baseline. Candidate baseline: `macos-26`, explicitly select Xcode 26.6, and test an installed stable iOS 26.5 Simulator destination; update this only after checking GitHub's current image and Apple's compatibility matrix.
 
 When the real Swift/SwiftUI project begins:
 
-- Add a least-privilege GitHub Actions job on an available macOS runner with its installed Xcode/iOS SDK and official iOS Simulator. At phase kickoff, verify the runner image, Xcode version, simulator runtime and destination; record those versions so results are reproducible.
-- Run Xcode build and XCTest on a simulator destination. Add XCUITest smoke coverage for app launch, device-list and pairing/session navigation, settings, accessibility identifiers, and practical permission-denied/recovery states. Keep protocol, discovery and state logic injectable so unit tests can use deterministic fakes.
-- Simulator CI can check Swift compilation, unit/state logic, view integration, navigation, layout and basic UI automation without a personal Mac or iPhone. Label the result **macOS/iOS Simulator CI**, never physical-device verified.
-- Use simulator builds that do not require distribution credentials where the selected Xcode setup allows it. Never expose Apple signing secrets to untrusted pull-request code. Confirm the current signing/provisioning requirements separately before installing on a borrowed iPhone or distributing an app.
-- Do not infer real Wi-Fi/Bonjour/multicast reliability, device privacy-prompt behavior, inter-device interoperability, sustained background execution, capture/mirroring, battery or thermal performance from a simulator run. Those require the borrowed-iPhone checklist in the roadmap and a compatible peer.
+- Use a least-privilege macOS Actions job (`contents: read`, bounded timeout, pinned actions, checkout without persisted credentials). Avoid `macos-latest`; the image label is mutable, so log its image version and explicitly select/assert the stable Xcode path.
+- Log `xcodebuild -version`, `swift --version`, `xcodebuild -showsdks`, `xcrun simctl list runtimes`, and the available iOS simulator destinations. Fail clearly if the selected stable runtime is missing. Keep these logs and the actual test command with the result.
+- Run XCTest for state transitions, validation, capability negotiation, protocol fixtures, and security/error paths. Use XCUITest for practical launch, navigation, accessibility identifiers, settings, empty/error states, and permission-denial/recovery behavior that the simulator exposes. Keep discovery/protocol/state boundaries injectable for deterministic unit tests.
+- A future command template for the reviewed snapshot (not runnable until the project/scheme exists) is:
 
-The official iOS Simulator is supplied by Xcode on macOS. It does not run on this Linux environment; PhoneDock will not build a custom emulator. No Apple runner, Xcode project, simulator command, or iOS test suite is added by this documentation-only change.
+  ```bash
+  set -o pipefail
+  RESULT_DIR="$(mktemp -d "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/phonedock.XXXXXX")"
+  xcodebuild \
+    -project ios/PhoneDock.xcodeproj \
+    -scheme PhoneDock \
+    -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' \
+    -resultBundlePath "$RESULT_DIR/PhoneDock.xcresult" \
+    CODE_SIGNING_ALLOWED=NO \
+    test 2>&1 | tee "$RESULT_DIR/xcodebuild.log"
+  ```
+
+  Recheck project/scheme/destination names against the selected image at implementation time. Use the same documented command locally on macOS and CI.
+- In the workflow, upload the `xcodebuild` log and `.xcresult` bundle on failure using a separately pinned artifact action/step that still runs after the test command fails; apply short retention and do not include secrets or user data. Simulator builds should not need a distribution certificate or App Store Connect credentials; never expose any signing secret to untrusted PR code.
+- Label results **macOS/iOS Simulator CI**, never physical-device verified. Simulator can verify compilation, app/unit/state tests, protocol fixtures, navigation/layout, and practical UI automation on that runtime. It cannot establish real Wi-Fi/Bonjour/multicast, device permission prompts across hardware, peer interoperability, cable/accessory behavior, sustained background execution, screen-capture quality, battery, or thermal performance.
+- A physical-device test also needs an authorized iPhone, a compatible peer, and a legitimate signed install path. A hosted macOS runner is not a USB-connected iPhone lab. Until the borrowed-device checklist is actually performed, iPhone evidence remains **Not started**.
+
+No Apple CI job is added by this documentation-only change because no real Xcode project, scheme, or repeatable test command exists. The official iOS Simulator runs on macOS; it does not run on Linux and PhoneDock will not build a custom emulator.
 
 ## Required failure and resilience coverage before features ship
 
@@ -124,4 +142,4 @@ In the audit sandbox, `python3 scripts/check_repository.py` passed (required fil
 
 The audit environment has no Java/Android SDK or Windows/MSBuild toolchain, so Android/Windows builds were not run locally. No physical devices were available and there was no baseline unit/integration test suite.
 
-Initial PR CI runs [36648554925](https://github.com/Emerald-dev0/PhoneDock/actions/runs/36648554925), [36649242392](https://github.com/Emerald-dev0/PhoneDock/actions/runs/36649242392), [36649688990](https://github.com/Emerald-dev0/PhoneDock/actions/runs/36649688990), and [36650248646](https://github.com/Emerald-dev0/PhoneDock/actions/runs/36650248646) exposed failures in Qt imports/UI construction, Windows DNS-SD compilation, and Android lint. The code and CI setup were corrected; run [36650681493](https://github.com/Emerald-dev0/PhoneDock/actions/runs/36650681493) passes all configured jobs: repository/source checks, Linux dependency imports and offscreen UI smoke, Android lint/debug assembly, and Windows x64 Release build. GitGuardian also passes. The Android test task contains no app test sources; the Windows result is compile-only; the Linux smoke does not exercise a real session/network/device. Local Android/Windows builds remain blocked by absent toolchains and local Qt offscreen startup by missing `libGL.so.1`. `actionlint` could not be downloaded, but all workflows and Dependabot YAML parsed with PyYAML and GitHub accepted/executed the workflows. No real-device result is claimed.
+Initial PR CI runs [36648554925](https://github.com/Emerald-dev0/PhoneDock/actions/runs/36648554925), [36649242392](https://github.com/Emerald-dev0/PhoneDock/actions/runs/36649242392), [36649688990](https://github.com/Emerald-dev0/PhoneDock/actions/runs/36649688990), and [36650248646](https://github.com/Emerald-dev0/PhoneDock/actions/runs/36650248646) exposed failures in Qt imports/UI construction, Windows DNS-SD compilation, and Android lint. The code and CI setup were corrected; run [36650681493](https://github.com/Emerald-dev0/PhoneDock/actions/runs/36650681493) passed the configured jobs at that point. The latest verified PR run, [36652649534](https://github.com/Emerald-dev0/PhoneDock/actions/runs/36652649534), also passes the existing repository/source checks, Linux dependency imports and offscreen UI smoke, Android lint/debug assembly, and Windows x64 Release build; GitGuardian passes. The Android test task contains no app test sources; the Windows result is compile-only; the Linux smoke does not exercise a real session/network/device. Local Android/Windows builds remain blocked by absent toolchains and local Qt offscreen startup by missing `libGL.so.1`. `actionlint` could not be downloaded, but all workflows and Dependabot YAML parsed with PyYAML and GitHub accepted/executed the workflows. No iOS, macOS-app, or real-device result is claimed.
