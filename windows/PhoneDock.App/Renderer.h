@@ -4,7 +4,7 @@
 #include <d3d11_1.h>
 #include <dxgi1_3.h>
 #include <wrl/client.h>
-#include <winrt/base.h>
+#include <cstdint>
 
 namespace PhoneDock::App {
 

@@ -16,4 +16,35 @@ node_modules/
 captures/
 build_deb/
 *.spec
+
+# Local Android SDK paths and per-developer IDE state
+local.properties
+.vscode/
+
+# Python virtual environments and test/lint caches
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+
+# Platform build outputs
+.vs/
+Debug/
+Release/
+x64/
+*.apk
+*.aab
+*.appx
+*.msix
+*.msi
+*.obj
+*.lib
+*.dll
+*.pdb
+*.ilk
+*.exp
+*.exe
+*.sys
+*.dSYM/
 *.deb

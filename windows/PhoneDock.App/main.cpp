@@ -1,7 +1,7 @@
 #include <iostream>
 #include <thread>
-#include "Discovery.h"
 #include "SessionClient.h"
+#include "Discovery.h"
 #include "VideoDecoder.h"
 #include "Renderer.h"
 

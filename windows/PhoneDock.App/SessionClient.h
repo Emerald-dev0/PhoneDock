@@ -1,11 +1,12 @@
 #pragma once
 
-#include <windows.h>
-#include <string>
-#include <functional>
-#include <thread>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <windows.h>
+#include <cstdint>
+#include <functional>
+#include <string>
+#include <thread>
 #include <vector>
 
 namespace PhoneDock::App {

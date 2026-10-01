@@ -45,9 +45,9 @@ VOID WINAPI DiscoveryAgent::BrowseCallback(DWORD status, PVOID context, PDNS_REC
         if (record->wType == DNS_TYPE_PTR) {
             DNS_SERVICE_RESOLVE_REQUEST resolveRequest = { 0 };
             resolveRequest.Version = DNS_QUERY_REQUEST_VERSION1;
-            resolveRequest.InterfaceIndex = record->dwInterfaceIndex;
+            resolveRequest.InterfaceIndex = 0;
             resolveRequest.QueryName = record->Data.PTR.pNameHost;
-            resolveRequest.pResolveCallback = ResolveCallback;
+            resolveRequest.pResolveCompletionCallback = ResolveCallback;
             resolveRequest.pQueryContext = agent;
 
             // Resolve the service to get IP and Port
@@ -67,7 +67,10 @@ VOID WINAPI DiscoveryAgent::ResolveCallback(DWORD status, PVOID context, PDNS_SE
         service.port = instance->wPort;
 
         if (instance->ip4Address != nullptr) {
-            service.ipAddress = instance->ip4Address; // Simplification for example
+            wchar_t address[INET_ADDRSTRLEN]{};
+            if (InetNtopW(AF_INET, instance->ip4Address, address, ARRAYSIZE(address)) != nullptr) {
+                service.ipAddress = address;
+            }
         }
 
         if (agent->m_onServiceFound) {
